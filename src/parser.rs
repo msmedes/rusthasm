@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fs;
 
 #[derive(Debug)]
@@ -19,7 +18,7 @@ struct CInstruction {
 pub struct Parser<'a> {
     file_path: String,
     pub line_number: i32,
-    file: Vec<&'a str>,
+    file: Vec<String>,
     pub current_command_type: CommandType,
     symbol: &'a str,
     comp: &'a str,
@@ -29,12 +28,9 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(file_path: String) -> Result<Parser<'a>, Box<dyn Error>> {
-        let file = match load_file(&file_path) {
-            Ok(file) => file,
-            Err(e) => return e,
-        };
-        Ok(Parser {
+    pub fn new(file_path: String) -> Parser<'a> {
+        let file = load_file(file_path.clone());
+        Parser {
             file_path,
             line_number: -1,
             file,
@@ -44,17 +40,13 @@ impl<'a> Parser<'a> {
             comp: "",
             dest: "",
             jump: "",
-        })
+        }
     }
-
-    // pub fn reset(self) {
-    //     self.line_number = -1;
-    // }
 }
 
-fn load_file(file_path: &String) -> Result<Vec<&str>, Box<dyn Error>> {
-    let file_contents = fs::read_to_string(file_path)?;
-    Ok(file_contents.lines().collect())
+fn load_file(file_path: String) -> Vec<String> {
+    let contents = fs::read_to_string(file_path).expect("Can't read file");
+    contents.lines().map(|s: &str| s.to_string()).collect()
 }
 
 fn process_line(line: &str) -> &str {
