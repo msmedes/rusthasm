@@ -1,7 +1,7 @@
 use std::fs;
 
-#[derive(Debug)]
-pub enum CommandType {
+#[derive(Debug, PartialEq)]
+pub enum Command {
     A,
     C,
     L,
@@ -14,12 +14,22 @@ struct CInstruction {
     jump: String,
 }
 
+impl CInstruction {
+    fn new(comp: String, dest:String, jump: String) -> CInstruction {
+        CInstruction {
+            comp,
+            dest,
+            jump,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Parser {
     file_path: String,
     pub line_number: i32,
     file: Vec<String>,
-    pub current_command_type: CommandType,
+    pub current_command_type: Command,
     symbol: String,
     comp: String,
     dest: String,
@@ -35,12 +45,70 @@ impl Parser {
             line_number: -1,
             file,
             instruction_counter: 0,
-            current_command_type: CommandType::Null,
+            current_command_type: Command::Null,
             symbol: String::from(""),
             comp: String::from(""),
             dest: String::from(""),
             jump: String::from(""),
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.line_number = -1 as i32;
+    }
+
+    pub fn has_more_commands(&self) -> bool {
+        self.line_number < (self.file.len() as i32) - 1
+    }
+
+    fn reset_commands(&mut self) {
+        self.current_command_type = Command::Null;
+        self.symbol = String::from("");
+        self.comp = String::from("");
+        self.dest = String::from("");
+        self.jump = String::from("");
+    }
+
+    fn current_command(&self) -> String {
+        self.file[self.line_number as usize].clone()
+    }
+
+    fn command_type(&mut self) -> Command {
+        self.reset_commands();
+        let first_char = self.current_command().chars().next(); // Holy shit ok
+        match first_char {
+            Some('@') => Command::A,
+            Some('(') => Command::L,
+            _ => Command::C, 
+        }
+    }
+
+    fn parse_a_command(&self) -> String {
+        self.current_command()[1..].to_string()
+    }
+
+    fn parse_l_command(&self) -> String {
+        let len = self.current_command().len();
+        self.current_command()[1..len-1].to_string()
+    }
+
+    fn parse_c_command(&self) -> CInstruction {
+        let mut jump = "NONE";
+        let mut comp = "";
+        let command = self.current_command();
+        let equal_index = command.find("=");
+        let dest = match equal_index {
+            Some(index) => command[..index].to_string(),
+            None => "NONE".to_string(),
+        }
+
+        let semi_index = command.find(";");
+        let jump = match semi_index {
+            
+        }
+
+        CInstruction::new(dest, comp, jump)
+
     }
 }
 
@@ -96,12 +164,53 @@ mod tests {
     #[test]
     fn load_existing_file() {
         let file_contents = load_file(String::from("test.txt"));
-        assert_eq!(file_contents, vec!["foo","bar","baz","bax",])
+        assert_eq!(file_contents, vec!["@OUTPUT_D",
+            "   0;JMP            // goto output_d",
+         "(OUTPUT_FIRST)",]);
     }
 
     #[test]
     #[should_panic(expected = "No such file")]
     fn load_unexisting_file() {
         let _ = load_file(String::from("nosuchfile.txt"));
+    }
+
+    #[test]
+    fn has_more_commands() {
+        let parser = Parser::new(String::from("test.txt"));
+        let more_commands = parser.has_more_commands();
+        assert_eq!(true, more_commands);
+    }
+
+    #[test]
+    fn no_more_commands() {
+        let mut parser = Parser::new("test.txt".to_string());
+        parser.line_number = (parser.file.len() as i32) - 1;
+        let more_commands = parser.has_more_commands();
+        assert_eq!(more_commands, false);
+    }
+
+    #[test]
+    fn find_a_command() {
+        let mut parser = Parser::new("test.txt".to_string());
+        parser.line_number = 0;
+        let result = parser.command_type();
+        assert_eq!(result, Command::A);
+    }
+    
+    #[test]
+    fn find_c_command() {
+        let mut parser = Parser::new("test.txt".to_string());
+        parser.line_number = 1;
+        let result = parser.command_type();
+        assert_eq!(result, Command::C);
+    }
+
+    #[test]
+    fn find_l_command() {
+        let mut parser = Parser::new("test.txt".to_string());
+        parser.line_number = 2;
+        let result = parser.command_type();
+        assert_eq!(result, Command::L);
     }
 }

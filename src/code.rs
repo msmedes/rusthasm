@@ -43,7 +43,7 @@ impl<'a> Code<'a> {
         .cloned()
         .collect();
         let dest_table: HashMap<&'a str, &'a str> = [
-            ("NIL", "000"),
+            ("NONE", "000"),
             ("M", "001"),
             ("D", "010"),
             ("MD", "011"),
@@ -57,7 +57,7 @@ impl<'a> Code<'a> {
         .collect();
 
         let jump_table: HashMap<&'a str, &'a str> = [
-            ("NIL", "000"),
+            ("NONE", "000"),
             ("JGT", "001"),
             ("JEQ", "010"),
             ("JGE", "011"),
