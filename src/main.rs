@@ -7,6 +7,6 @@ fn main() {
     println!("{:?}", symbol_table);
     let code = code::Code::new();
     println!("{:?}", code);
-    let parser = parser::Parser::new(String::from("hello world.txt"));
+    let parser = parser::Parser::new(String::from("test.txt"));
     println!("{:?}", parser);
 }
