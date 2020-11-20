@@ -7,18 +7,18 @@ pub enum Command {
     L,
     Null,
 }
-
+#[derive(Debug, PartialEq)]
 struct CInstruction {
-    comp: String,
     dest: String,
+    comp: String,
     jump: String,
 }
 
 impl CInstruction {
-    fn new(comp: String, dest:String, jump: String) -> CInstruction {
+    fn new(dest: String, comp: String, jump: String) -> CInstruction {
         CInstruction {
-            comp,
             dest,
+            comp,
             jump,
         }
     }
@@ -93,22 +93,31 @@ impl Parser {
     }
 
     fn parse_c_command(&self) -> CInstruction {
-        let mut jump = "NONE";
-        let mut comp = "";
+        // I am not proud of this
+        let mut dest = "NONE".to_string();
+        let mut jump = "NONE".to_string();
+        let comp: String;
         let command = self.current_command();
-        let equal_index = command.find("=");
-        let dest = match equal_index {
-            Some(index) => command[..index].to_string(),
-            None => "NONE".to_string(),
+        let equal_index = match command.find('=') {
+            Some(index) => index as i32,
+            None => -1 as i32,
+        };
+        let semi_index = match command.find(';') {
+            Some(index) => index as i32,
+            None => -1 as i32,
+        };
+
+        if equal_index != -1 {
+            dest = command[..equal_index as usize].to_string();
         }
 
-        let semi_index = command.find(";");
-        let jump = match semi_index {
-            
+        if semi_index != -1 {
+            jump = command[(semi_index+1) as usize..].to_string();
+            comp = command[(equal_index+1) as usize..semi_index as usize].to_string();
+        } else {
+            comp = command[(equal_index+1) as usize..].to_string();
         }
-
         CInstruction::new(dest, comp, jump)
-
     }
 }
 
@@ -212,5 +221,32 @@ mod tests {
         parser.line_number = 2;
         let result = parser.command_type();
         assert_eq!(result, Command::L);
+    }
+
+    #[test]
+    fn parse_c_command_equals_only() {
+        let mut parser = Parser::new("c_commands.txt".to_string());
+        parser.line_number = 0;
+        let result = parser.parse_c_command();
+        let desired = CInstruction::new("D".to_string(), "D-M".to_string(), "NONE".to_string());
+        assert_eq!(result, desired);
+    }
+
+    #[test]
+    fn parse_c_command_semi_and_equals() {
+        let mut parser = Parser::new("c_commands.txt".to_string());
+        parser.line_number = 1;
+        let result = parser.parse_c_command();
+        let desired = CInstruction::new("A".to_string(), "M+1".to_string(), "JMP".to_string());
+        assert_eq!(result, desired);
+    }
+
+    #[test]
+    fn parse_c_command_no_equals() {
+        let mut parser = Parser::new("c_commands.txt".to_string());
+        parser.line_number = 2;
+        let result = parser.parse_c_command(); 
+        let desired = CInstruction::new("NONE".to_string(), "0".to_string(), "JMP".to_string());
+        assert_eq!(result, desired)
     }
 }

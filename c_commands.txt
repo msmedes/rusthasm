@@ -1,0 +1,3 @@
+D=D-M
+A=M+1;JMP
+0;JMP
