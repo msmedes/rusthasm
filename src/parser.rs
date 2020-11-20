@@ -119,6 +119,51 @@ impl Parser {
         }
         CInstruction::new(dest, comp, jump)
     }
+    
+    pub fn advance(&mut self) {
+        self.line_number += 1;
+        self.current_command_type = self.command_type();
+        match self.current_command_type {
+            Command::A => self.symbol = self.parse_a_command(),
+            Command::C => {
+                let instruction = self.parse_c_command();
+                self.dest = instruction.dest;
+                self.comp = instruction.comp;
+                self.jump = instruction.jump;
+            }
+            Command::L => self.symbol = self.parse_l_command(),
+            _ => panic!("command type cannot be null"),
+        }
+    }
+
+    pub fn comp(&self) -> String {
+        match self.current_command_type {
+            Command::C => self.comp.clone(),
+            _ => panic!("comp command can only be returned for C commands"),
+        }
+    }
+
+    pub fn dest(&self) -> String {
+        match self.current_command_type {
+            Command::C => self.dest.clone(),
+            _ => panic!("dest command can only be returned by C commands"),
+        }
+    }
+
+    pub fn jump(&self) -> String {
+        match self.current_command_type {
+            Command::C => self.jump.clone(),
+            _ => panic!("jump command can only be returned by C commands"),
+        }
+    }
+
+    pub fn symbol(&self) -> String {
+        match self.current_command_type {
+            // I guess this is the best way to do this in rust?
+            Command::C => panic!("symbol command can only be returned by A or L commands"),
+            _ => self.symbol.clone(),
+        }
+    }
 }
 
 fn load_file(file_path: String) -> Vec<String> {
