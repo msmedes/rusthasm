@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Table<'a> {
+pub struct SymbolTable<'a> {
     table: HashMap<&'a str, u16>,
     counter: u16,
 }
 
-impl<'a> Table<'a> {
-    pub fn new() -> Table<'a> {
+impl<'a> SymbolTable<'a> {
+    pub fn new() -> SymbolTable<'a> {
         let table: HashMap<&'a str, u16> = [
             ("SP", 0),
             ("LCL", 1),
@@ -52,6 +52,6 @@ impl<'a> Table<'a> {
         .iter()
         .cloned()
         .collect();
-        Table { table, counter: 16 }
+        SymbolTable { table, counter: 16 }
     }
 }
