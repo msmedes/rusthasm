@@ -54,4 +54,25 @@ impl<'a> SymbolTable<'a> {
         .collect();
         SymbolTable { table, counter: 16 }
     }
+
+    pub fn add_entry(&mut self, symbol: &'a str, addr: u16) {
+        self.table.insert(symbol, addr);
+    }
+
+    pub fn add_variable(&mut self, symbol: &'a str) {
+        self.table.insert(symbol, self.counter);
+        self.counter += 1;
+    }
+
+    pub fn get_addr(&self, symbol: &'a str) -> u16 {
+        match self.table.get(symbol) {
+            Some(val) => *val,
+            None => panic!("symbol {} not found", symbol),
+        }
+    }
+
+    pub fn contains(&self, symbol: &'a str) -> bool {
+        self.table.get(symbol).is_some()
+    }
+
 }

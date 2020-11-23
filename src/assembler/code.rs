@@ -75,4 +75,25 @@ impl<'a> Code<'a> {
             jump_table,
         }
     }
+
+    pub fn comp(&self, mnemonic: &str) -> &str {
+        match self.comp_table.get(mnemonic) {
+            Some(val) => val,
+            None => panic!("no mnemonic {} found in code table", mnemonic)
+        }
+    }
+
+    pub fn jump(&self, mnemonic: &str) -> &str {
+        match self.jump_table.get(mnemonic) {
+            Some(val) => val,
+            None => panic!("No mnemonic {} found in code table", mnemonic)
+        }
+    }
+
+    pub fn dest(&self, mnemonic: &str) -> &str {
+        match self.dest_table.get(mnemonic) {
+            Some(val) => val,
+            None => panic!("No mnemonic {} found in dest table", mnemonic)
+        }
+    }
 }
