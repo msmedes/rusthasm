@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Code<'a> {
-    comp_table: HashMap<&'a str, &'a str>,
-    dest_table: HashMap<&'a str, &'a str>,
-    jump_table: HashMap<&'a str, &'a str>,
+pub struct Code {
+    comp_table: HashMap<String, String>,
+    dest_table: HashMap<String, String>,
+    jump_table: HashMap<String, String>,
 }
 
-impl<'a> Code<'a> {
-    pub fn new() -> Code<'a> {
-        let comp_table: HashMap<&'a str, &'a str> = [
+impl Code {
+    pub fn new() -> Code {
+        let comp_table: HashMap<String, String> = [
             ("0", "0101010"),
             ("1", "0111111"),
             ("-1", "0111010"),
@@ -40,9 +40,10 @@ impl<'a> Code<'a> {
             ("D|M", "1010101"),
         ]
         .iter()
-        .cloned()
+        .map(|(key, val)| (key.to_owned().to_string(), val.to_owned().to_string()))
         .collect();
-        let dest_table: HashMap<&'a str, &'a str> = [
+
+        let dest_table: HashMap<String, String> = [
             ("NONE", "000"),
             ("M", "001"),
             ("D", "010"),
@@ -53,10 +54,10 @@ impl<'a> Code<'a> {
             ("AMD", "111"),
         ]
         .iter()
-        .cloned()
+        .map(|(key, val)| (key.to_owned().to_string(), val.to_owned().to_string()))
         .collect();
 
-        let jump_table: HashMap<&'a str, &'a str> = [
+        let jump_table: HashMap<String, String> = [
             ("NONE", "000"),
             ("JGT", "001"),
             ("JEQ", "010"),
@@ -67,8 +68,9 @@ impl<'a> Code<'a> {
             ("JMP", "111"),
         ]
         .iter()
-        .cloned()
+        .map(|(key, val)| (key.to_owned().to_string(), val.to_owned().to_string()))
         .collect();
+        
         Code {
             comp_table,
             dest_table,

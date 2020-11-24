@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct SymbolTable<'a> {
-    table: HashMap<&'a str, u16>,
+pub struct SymbolTable {
+    table: HashMap<String, u16>,
     counter: u16,
 }
 
-impl<'a> SymbolTable<'a> {
-    pub fn new() -> SymbolTable<'a> {
-        let table: HashMap<&'a str, u16> = [
+impl SymbolTable {
+    pub fn new() -> SymbolTable {
+        let table: HashMap<String, u16> = [
             ("SP", 0),
             ("LCL", 1),
             ("ARG", 2),
@@ -50,29 +50,31 @@ impl<'a> SymbolTable<'a> {
             ("KBD", 24576),
         ]
         .iter()
-        .cloned()
+        .map(|(key, val)| (key.to_owned().to_string(), *val))
         .collect();
+
         SymbolTable { table, counter: 16 }
     }
 
-    pub fn add_entry(&mut self, symbol: &'a str, addr: u16) {
+    pub fn add_entry(&mut self, symbol: String, addr: u16) {
         self.table.insert(symbol, addr);
     }
 
-    pub fn add_variable(&mut self, symbol: &'a str) {
+    pub fn add_variable(&mut self, symbol: String) -> u16 {
         self.table.insert(symbol, self.counter);
         self.counter += 1;
+        self.counter - 1
     }
 
-    pub fn get_addr(&self, symbol: &'a str) -> u16 {
+    pub fn get_addr(&self, symbol: &String) -> Option<u16> {
         match self.table.get(symbol) {
-            Some(val) => *val,
-            None => panic!("symbol {} not found", symbol),
+            Some(val) => Some(*val),
+            None => None,
         }
     }
 
-    pub fn contains(&self, symbol: &'a str) -> bool {
-        self.table.get(symbol).is_some()
+    pub fn contains(&self, symbol: String) -> bool {
+        self.table.get(&symbol).is_some()
     }
 
 }

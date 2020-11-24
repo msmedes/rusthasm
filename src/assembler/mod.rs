@@ -4,17 +4,17 @@ mod symbol;
 
 use std::convert::TryInto;
 
-pub struct Assembler<'a> {
+pub struct Assembler {
     file_path: String,
     parser: parser::Parser,
-    code: code::Code<'a>,
-    symbol: symbol::SymbolTable<'a>,
+    code: code::Code,
+    symbol: symbol::SymbolTable,
     buffer: Vec<String>,
     assembled: bool,
 }
 
-impl <'a> Assembler<'a> {
-    pub fn new(file_path: String) -> Assembler<'a> {
+impl  Assembler {
+    pub fn new(file_path: String) -> Assembler {
         Assembler {
             file_path: file_path.clone(),
             parser: parser::Parser::new(file_path),
@@ -39,8 +39,20 @@ impl <'a> Assembler<'a> {
     }
 
     fn process_a_command(&mut self) {
-        // let symbol = self.parser.symbol();
-        todo!();
+        // let binary: String;
+        let symbol = self.parser.symbol();
+        let address = symbol.parse::<u16>();
+        let binary = match address {
+            Ok(address) => format!("{:#16b}", address),
+            Err(_) => {
+                let address = match self.symbol.get_addr(&symbol) {
+                    Some(address) => address,
+                    None => self.symbol.add_variable(symbol.clone()),
+                };
+                format!("{:#16b}", address)
+            }
+        };
+        self.buffer.push(binary);
     }
 
     fn process_c_command(&mut self) {
@@ -60,8 +72,8 @@ impl <'a> Assembler<'a> {
             match self.parser.current_command_type {
                 parser::Command::L => {
                     let symbol = self.parser.symbol();
-                    if !self.symbol.contains(&symbol) {
-                        self.symbol.add_entry(&symbol.clone(), self.parser.instruction_counter.try_into().unwrap());
+                    if !self.symbol.contains(symbol.clone()) {
+                        self.symbol.add_entry(symbol, self.parser.instruction_counter.try_into().unwrap());
                     }
                 }
                 _ => self.parser.instruction_counter += 1

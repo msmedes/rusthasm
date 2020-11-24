@@ -84,18 +84,18 @@ impl Parser {
     }
 
     fn parse_a_command(&self) -> String {
-        self.current_command()[1..].to_string()
+        self.current_command()[1..].to_owned()
     }
 
     fn parse_l_command(&self) -> String {
         let len = self.current_command().len();
-        self.current_command()[1..len-1].to_string()
+        self.current_command()[1..len-1].to_owned()
     }
 
     fn parse_c_command(&self) -> CInstruction {
         // I am not proud of this
-        let mut dest = "NONE".to_string();
-        let mut jump = "NONE".to_string();
+        let mut dest = "NONE".to_owned();
+        let mut jump = "NONE".to_owned();
         let comp: String;
         let command = self.current_command();
         let equal_index = match command.find('=') {
@@ -108,14 +108,14 @@ impl Parser {
         };
 
         if equal_index != -1 {
-            dest = command[..equal_index as usize].to_string();
+            dest = command[..equal_index as usize].to_owned();
         }
 
         if semi_index != -1 {
-            jump = command[(semi_index+1) as usize..].to_string();
-            comp = command[(equal_index+1) as usize..semi_index as usize].to_string();
+            jump = command[(semi_index+1) as usize..].to_owned();
+            comp = command[(equal_index+1) as usize..semi_index as usize].to_owned();
         } else {
-            comp = command[(equal_index+1) as usize..].to_string();
+            comp = command[(equal_index+1) as usize..].to_owned();
         }
         CInstruction::new(dest, comp, jump)
     }
@@ -168,7 +168,7 @@ impl Parser {
 
 fn load_file(file_path: String) -> Vec<String> {
     let contents = fs::read_to_string(file_path).expect("Can't read file");
-    contents.lines().map(|s: &str| s.to_string()).collect()
+    contents.lines().map(|s: &str| s.to_owned()).collect()
 }
 
 fn process_line(line: String) -> String {
@@ -238,7 +238,7 @@ mod tests {
 
     #[test]
     fn no_more_commands() {
-        let mut parser = Parser::new("test.txt".to_string());
+        let mut parser = Parser::new("test.txt".to_owned());
         parser.line_number = (parser.file.len() as i32) - 1;
         let more_commands = parser.has_more_commands();
         assert_eq!(more_commands, false);
@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn find_a_command() {
-        let mut parser = Parser::new("test.txt".to_string());
+        let mut parser = Parser::new("test.txt".to_owned());
         parser.line_number = 0;
         let result = parser.command_type();
         assert_eq!(result, Command::A);
@@ -254,7 +254,7 @@ mod tests {
     
     #[test]
     fn find_c_command() {
-        let mut parser = Parser::new("test.txt".to_string());
+        let mut parser = Parser::new("test.txt".to_owned());
         parser.line_number = 1;
         let result = parser.command_type();
         assert_eq!(result, Command::C);
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn find_l_command() {
-        let mut parser = Parser::new("test.txt".to_string());
+        let mut parser = Parser::new("test.txt".to_owned());
         parser.line_number = 2;
         let result = parser.command_type();
         assert_eq!(result, Command::L);
@@ -270,28 +270,28 @@ mod tests {
 
     #[test]
     fn parse_c_command_equals_only() {
-        let mut parser = Parser::new("c_commands.txt".to_string());
+        let mut parser = Parser::new("c_commands.txt".to_owned());
         parser.line_number = 0;
         let result = parser.parse_c_command();
-        let desired = CInstruction::new("D".to_string(), "D-M".to_string(), "NONE".to_string());
+        let desired = CInstruction::new("D".to_owned(), "D-M".to_owned(), "NONE".to_owned());
         assert_eq!(result, desired);
     }
 
     #[test]
     fn parse_c_command_semi_and_equals() {
-        let mut parser = Parser::new("c_commands.txt".to_string());
+        let mut parser = Parser::new("c_commands.txt".to_owned());
         parser.line_number = 1;
         let result = parser.parse_c_command();
-        let desired = CInstruction::new("A".to_string(), "M+1".to_string(), "JMP".to_string());
+        let desired = CInstruction::new("A".to_owned(), "M+1".to_owned(), "JMP".to_owned());
         assert_eq!(result, desired);
     }
 
     #[test]
     fn parse_c_command_no_equals() {
-        let mut parser = Parser::new("c_commands.txt".to_string());
+        let mut parser = Parser::new("c_commands.txt".to_owned());
         parser.line_number = 2;
         let result = parser.parse_c_command(); 
-        let desired = CInstruction::new("NONE".to_string(), "0".to_string(), "JMP".to_string());
+        let desired = CInstruction::new("NONE".to_owned(), "0".to_owned(), "JMP".to_owned());
         assert_eq!(result, desired)
     }
 }
