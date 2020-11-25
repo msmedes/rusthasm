@@ -120,19 +120,19 @@ impl Parser {
         CInstruction::new(dest, comp, jump)
     }
     
-    pub fn advance(&mut self) {
+    pub fn advance(&mut self, first_pass: bool) {
         self.line_number += 1;
         self.current_command_type = self.command_type();
-        match self.current_command_type {
-            Command::A => self.symbol = self.parse_a_command(),
-            Command::C => {
+        match (&self.current_command_type, first_pass) {
+            (Command::A, false) => self.symbol = self.parse_a_command(),
+            (Command::C, false) => {
                 let instruction = self.parse_c_command();
                 self.dest = instruction.dest;
                 self.comp = instruction.comp;
                 self.jump = instruction.jump;
             }
-            Command::L => self.symbol = self.parse_l_command(),
-            _ => panic!("command type cannot be null"),
+            (Command::L, _) => self.symbol = self.parse_l_command(),
+            _ => (),
         }
     }
 
@@ -168,7 +168,11 @@ impl Parser {
 
 fn load_file(file_path: String) -> Vec<String> {
     let contents = fs::read_to_string(file_path).expect("Can't read file");
-    contents.lines().map(|s: &str| s.to_owned()).collect()
+    contents
+    .lines()
+    .map(|s: &str| process_line(s.to_owned()))
+    .filter(|s|!s.is_empty())
+    .collect()
 }
 
 fn process_line(line: String) -> String {
@@ -219,7 +223,7 @@ mod tests {
     fn load_existing_file() {
         let file_contents = load_file(String::from("test.txt"));
         assert_eq!(file_contents, vec!["@OUTPUT_D",
-            "   0;JMP            // goto output_d",
+            "0;JMP",
          "(OUTPUT_FIRST)",]);
     }
 

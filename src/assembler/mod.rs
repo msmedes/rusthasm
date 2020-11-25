@@ -3,6 +3,8 @@ mod code;
 mod symbol;
 
 use std::convert::TryInto;
+use std::fs::File;
+use std::io::Write;
 
 pub struct Assembler {
     file_path: String,
@@ -28,11 +30,11 @@ impl  Assembler {
     pub fn assemble(&mut self) {
         self.process_l_commands();
         while self.parser.has_more_commands() {
-            self.parser.advance();
+            self.parser.advance(false);
             match self.parser.current_command_type {
                 parser::Command::A => self.process_a_command(),
                 parser::Command::C => self.process_c_command(),
-                _ => panic!("invalid command type"),
+                _ => (),
             }
         }
         self.assembled = true;
@@ -43,13 +45,13 @@ impl  Assembler {
         let symbol = self.parser.symbol();
         let address = symbol.parse::<u16>();
         let binary = match address {
-            Ok(address) => format!("{:#16b}", address),
+            Ok(address) => format!("{:016b}", address),
             Err(_) => {
                 let address = match self.symbol.get_addr(&symbol) {
                     Some(address) => address,
                     None => self.symbol.add_variable(symbol.clone()),
                 };
-                format!("{:#16b}", address)
+                format!("{:016b}", address)
             }
         };
         self.buffer.push(binary);
@@ -59,16 +61,16 @@ impl  Assembler {
         let parser_dest = self.parser.dest();
         let parser_comp = self.parser.comp();
         let parser_jump = self.parser.jump();
-        let dest = self.code.dest(&parser_dest);
-        let comp = self.code.comp(&parser_comp);
-        let jump = self.code.jump(&parser_jump);
+        let dest = self.code.dest(parser_dest);
+        let comp = self.code.comp(parser_comp);
+        let jump = self.code.jump(parser_jump);
         let command = format!("111{}{}{}", comp,dest,jump);
         self.buffer.push(command);
     }
 
     fn process_l_commands(&mut self) {
         while self.parser.has_more_commands() {
-            self.parser.advance();
+            self.parser.advance(true);
             match self.parser.current_command_type {
                 parser::Command::L => {
                     let symbol = self.parser.symbol();
@@ -78,11 +80,15 @@ impl  Assembler {
                 }
                 _ => self.parser.instruction_counter += 1
             }
-            self.parser.reset();
         }
+        self.parser.reset();
     }
 
-    pub fn write_to_file(){
-        todo!();
+    pub fn write_to_file(&self){
+        let filename = format!("{}.hack", self.file_path);
+        let mut file = File::create(filename).expect("unable to create file");
+       for i in &self.buffer {
+           writeln!(file, "{}", i).unwrap();
+       }
     }
 }

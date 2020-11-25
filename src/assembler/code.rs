@@ -70,7 +70,7 @@ impl Code {
         .iter()
         .map(|(key, val)| (key.to_owned().to_string(), val.to_owned().to_string()))
         .collect();
-        
+
         Code {
             comp_table,
             dest_table,
@@ -78,23 +78,23 @@ impl Code {
         }
     }
 
-    pub fn comp(&self, mnemonic: &str) -> &str {
-        match self.comp_table.get(mnemonic) {
-            Some(val) => val,
-            None => panic!("no mnemonic {} found in code table", mnemonic)
+    pub fn comp(&self, mnemonic: String) -> String {
+        match self.comp_table.get(&mnemonic) {
+            Some(val) => String::from(val),
+            None => panic!("no mnemonic {} found in comp table", mnemonic)
         }
     }
 
-    pub fn jump(&self, mnemonic: &str) -> &str {
-        match self.jump_table.get(mnemonic) {
-            Some(val) => val,
+    pub fn jump(&self, mnemonic: String) -> String {
+        match self.jump_table.get(&mnemonic) {
+            Some(val) => String::from(val),
             None => panic!("No mnemonic {} found in code table", mnemonic)
         }
     }
 
-    pub fn dest(&self, mnemonic: &str) -> &str {
-        match self.dest_table.get(mnemonic) {
-            Some(val) => val,
+    pub fn dest(&self, mnemonic: String) -> String {
+        match self.dest_table.get(&mnemonic) {
+            Some(val) => String::from(val),
             None => panic!("No mnemonic {} found in dest table", mnemonic)
         }
     }
