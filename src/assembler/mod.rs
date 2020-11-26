@@ -85,7 +85,8 @@ impl  Assembler {
     }
 
     pub fn write_to_file(&self){
-        let filename = format!("{}.hack", self.file_path);
+        let filename = self.file_path.strip_suffix(".asm").unwrap();
+        let filename = format!("{}.hack", filename);
         let mut file = File::create(filename).expect("unable to create file");
        for i in &self.buffer {
            writeln!(file, "{}", i).unwrap();
